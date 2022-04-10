@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+   
+  grafana_db:
+    image : mysql
+    container_name: grafana_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    ports :
+      - 3306:3306
+    volumes :
+      - database_grafana:/var/lib/mysql
+      # Création de la base de données lors de la création du contenaire
+      - ./vaccination.sql:/docker-entrypoint-initdb.d/vaccination.sql
+    networks:
+      - mysql_network_grafana
+    restart: always
+    
+  grafana2 :
+    image : grafana/grafana
+    container_name: grafana
+    ports :
+      - 3000:3000
+    environment:
+      GRAFANA_ADMIN_USER: admin
+      GRAFANA_ADMIN_PASSWORD: admin
+      GF_AUTH_ORG_ROLE: viewer
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_DASHBOARDS_DEFAUT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/dashboards.json
+      # ===========================================================================================
+      # Permet normalement de liée la base de données avec grafana, cependant cela ne fonctionne pas
+      GF_DATABASE_HOST: grafana_db
+      GF_DATABASE_USER: root
+      GF_DATABASE_PASSWORD: root
+      GF_DATABASE_NAME: vaccinations
+      GF_DATABASE_DATABASE: vaccinations
+      # ==========================================================================================
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./dashboards/:/var/lib/grafana/dashboards/
+      # - ./datasources/:/etc/grafana/provisioning/datasources/
+    depends_on:
+      - grafana_db
+    networks:
+      - mysql_network_grafana
+    restart: always
+
+volumes:
+  database_grafana:
+    name: database_grafana
+  grafana_data:
+    name: grafana_data
+
+networks:
+  mysql_network_grafana:
+    name: mysql_network_grafana
