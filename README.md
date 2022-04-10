@@ -24,4 +24,4 @@ Le Dashboard doit être importé à l'aide du fichier dashboards.json. Pour ce f
 
 ## Rendu du dashboard
 
-![image](/dashboard.PNG)
+![image](dashboard.png)
